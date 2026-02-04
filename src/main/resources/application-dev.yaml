@@ -1,25 +1,17 @@
 # Development Profile - Safe to commit (demo credentials)
 spring:
   datasource:
-    # PostgreSQL Configuration (recommended - satisfies "no in-memory-db" requirement)
     url: jdbc:postgresql://localhost:5432/custom_auth_db
     driverClassName: org.postgresql.Driver
     username: postgres
     password: postgres
     
-    # Alternative: H2 File-based (persistent, not in-memory)
-    # url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE
-    # driverClassName: org.h2.Driver
-    # username: sa
-    # password: password
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    # database-platform: org.hibernate.dialect.H2Dialect  # Use this for H2
 
   h2:
     console:
-      enabled: false  # Disable H2 console when using PostgreSQL
+      enabled: false  
       path: /h2-console
 
   mail:

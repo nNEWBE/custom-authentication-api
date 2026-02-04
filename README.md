@@ -1,74 +1,167 @@
-# Custom Authentication API
+# 🔐 Custom Authentication API
 
-A Spring Boot application providing custom JWT-based authentication with email verification.
+<p align="center">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot"/>
+  <img src="https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk" alt="Java"/>
+  <img src="https://img.shields.io/badge/JWT-Authentication-blue?style=for-the-badge&logo=jsonwebtokens" alt="JWT"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-316192?style=for-the-badge&logo=postgresql" alt="PostgreSQL"/>
+</p>
 
-## Features
+A production-ready, secure **Spring Boot REST API** implementing JWT-based authentication with email verification. Built following clean architecture principles and security best practices.
 
-- ✅ **User Registration** with email verification
-- ✅ **JWT Authentication** for secure API access
-- ✅ **Email Verification** with unique, time-limited links (10 minutes)
-- ✅ **Login Protection** - Users cannot login until verified
-- ✅ **Auto-resend Verification** - Verification email resent on unverified login attempt
-- ✅ **Rate Limiting** - 5-minute cooldown between verification email requests
-- ✅ **Token Invalidation** - Old verification links become invalid when a new one is generated
-- ✅ **Input Validation** - Email format, password length validation
-- ✅ **H2 File-based Database** - Persistent storage (not in-memory)
+---
 
-## Tech Stack
+## ✨ Features
 
-- Spring Boot 4.0.2
-- Spring Security 6
-- Spring Data JPA
-- JWT (jjwt)
-- H2 Database (file-based)
-- JavaMailSender
-- Lombok
+| Feature | Description |
+|---------|-------------|
+| 🔑 **JWT Authentication** | Stateless, secure token-based authentication |
+| 📧 **Email Verification** | Unique, time-limited verification links (10 min expiry) |
+| 🔒 **Login Protection** | Users cannot login until email is verified |
+| 🔄 **Auto-resend** | Verification email automatically resent on unverified login attempt |
+| ⏱️ **Rate Limiting** | 5-minute cooldown between verification email requests |
+| 🚫 **Token Invalidation** | Old verification links become invalid when new one is generated |
+| ✅ **Input Validation** | Email format, password strength validation |
+| 🗄️ **PostgreSQL Database** | Production-grade persistent storage |
+| 📨 **Async Email Sending** | Non-blocking email dispatch using Spring Events |
 
-## Setup
+---
 
-### 1. Email Configuration
+## 🛠️ Tech Stack
 
-Update `src/main/resources/application.yaml` with your SMTP credentials:
+| Technology | Purpose |
+|------------|---------|
+| **Spring Boot 4.0.2** | Application framework |
+| **Spring Security 7** | Authentication & authorization |
+| **Spring Data JPA** | Database ORM |
+| **PostgreSQL** | Primary database |
+| **JWT (jjwt 0.11.5)** | Token-based authentication |
+| **JavaMailSender** | Email delivery |
+| **Lombok** | Boilerplate reduction |
+| **Gradle** | Build automation |
 
+---
+
+## 📁 Project Structure
+
+```
+src/main/java/com/example/custom_authentication/
+├── 📂 config/
+│   ├── SecurityConfig.java            # Spring Security & JWT configuration
+│   └── JwtAuthenticationEntryPoint.java
+├── 📂 controller/
+│   ├── AuthController.java            # Authentication endpoints
+│   └── TestController.java            # Protected test endpoint
+├── 📂 dto/
+│   ├── RegisterRequest.java           # Registration payload with validation
+│   ├── LoginRequest.java              # Login payload
+│   ├── AuthResponse.java              # Auth response with token
+│   └── ApiResponse.java               # Standard API response wrapper
+├── 📂 entity/
+│   └── User.java                      # User entity with verification fields
+├── 📂 event/
+│   └── UserRegisteredEvent.java       # Event for async email sending
+├── 📂 exception/
+│   ├── EmailCooldownException.java    # Rate limiting exception
+│   ├── UserNotVerifiedException.java  # Verification exception
+│   └── GlobalExceptionHandler.java    # Centralized error handling
+├── 📂 filter/
+│   └── JwtAuthenticationFilter.java   # JWT validation filter
+├── 📂 listener/
+│   └── UserRegistrationListener.java  # Async email event handler
+├── 📂 repository/
+│   └── UserRepository.java            # User data access
+├── 📂 service/
+│   ├── UserService.java               # Core business logic
+│   ├── EmailService.java              # Email sending with HTML templates
+│   └── CustomUserDetailsService.java  # Spring Security integration
+├── 📂 util/
+│   └── JwtUtil.java                   # JWT generation & validation
+└── CustomAuthenticationProjectApplication.java
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Java 25+**
+- **PostgreSQL 15+**
+- **Gradle 8+**
+
+### 1️⃣ Database Setup
+
+```sql
+-- Create the database
+CREATE DATABASE custom_auth_db;
+```
+
+### 2️⃣ Configuration
+
+The application uses **Spring Profiles** for environment separation:
+
+| Profile | Database | Email | Use Case |
+|---------|----------|-------|----------|
+| `dev` | PostgreSQL | Mailtrap (testing) | Development |
+| `prod` | PostgreSQL | Gmail (real) | Production |
+
+#### Configure Email (choose one):
+
+**Option A: Mailtrap (Development)**
 ```yaml
+# src/main/resources/application-dev.yaml
+spring:
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: your-mailtrap-username
+    password: your-mailtrap-password
+```
+
+**Option B: Gmail (Production)**
+```yaml
+# src/main/resources/application-prod.yaml
 spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: your-email@gmail.com      # Replace with your email
-    password: your-app-password          # Replace with your App Password
+    username: your-email@gmail.com
+    password: your-app-password  # Generate at https://myaccount.google.com/apppasswords
 ```
 
-**Note:** For Gmail, you need to [generate an App Password](https://support.google.com/accounts/answer/185833).
-
-### 2. Database
-
-The application uses H2 file-based database. Data is stored in `./data/testdb`. No external database setup required.
-
-### 3. Running the Application
+### 3️⃣ Run the Application
 
 ```bash
-./gradlew bootRun
+# Development mode (Mailtrap)
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Production mode (Gmail)
+./gradlew bootRun --args='--spring.profiles.active=prod'
 ```
 
-The application will start on `http://localhost:8080`.
+The API will be available at `http://localhost:8080`
 
-## API Endpoints
+---
 
-### Authentication
+## 📡 API Reference
 
-#### Register
+### Authentication Endpoints
+
+#### Register User
 ```http
 POST /api/auth/register
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "securePassword123"
 }
 ```
 
-**Response (200 OK):**
+<details>
+<summary>📤 Response (201 Created)</summary>
+
 ```json
 {
   "success": true,
@@ -76,6 +169,9 @@ Content-Type: application/json
   "data": null
 }
 ```
+</details>
+
+---
 
 #### Login
 ```http
@@ -84,45 +180,58 @@ Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "securePassword123"
 }
 ```
 
-**Response (200 OK) - Verified User:**
+<details>
+<summary>📤 Response (200 OK) - Verified User</summary>
+
 ```json
 {
   "success": true,
   "message": "Login successful",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiJ9..."
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIi..."
   }
 }
 ```
+</details>
 
-**Response (403 Forbidden) - Unverified User:**
+<details>
+<summary>📤 Response (403 Forbidden) - Unverified User</summary>
+
 ```json
 {
   "success": false,
-  "message": "Account not verified. A new verification email has been sent.",
+  "message": "Account not verified. Verification email sent.",
   "data": null
 }
 ```
+</details>
 
-**Response (429 Too Many Requests) - Cooldown Active:**
+<details>
+<summary>📤 Response (429 Too Many Requests) - Cooldown Active</summary>
+
 ```json
 {
   "success": false,
-  "message": "Account not verified. Please check your email. You can request a new link after X minute(s).",
+  "message": "Please wait 4 minute(s) before requesting a new verification link.",
   "data": null
 }
 ```
+</details>
+
+---
 
 #### Verify Email
 ```http
 GET /api/auth/verify?token={verification-token}
 ```
 
-**Response (200 OK):**
+<details>
+<summary>📤 Response (200 OK)</summary>
+
 ```json
 {
   "success": true,
@@ -130,16 +239,40 @@ GET /api/auth/verify?token={verification-token}
   "data": null
 }
 ```
+</details>
+
+---
+
+#### Resend Verification Email
+```http
+POST /api/auth/resend-verification?email=user@example.com
+```
+
+<details>
+<summary>📤 Response (200 OK)</summary>
+
+```json
+{
+  "success": true,
+  "message": "Verification email sent successfully.",
+  "data": null
+}
+```
+</details>
+
+---
 
 ### Protected Endpoints
 
-#### Test Endpoint
+#### Test Endpoint (Requires Authentication)
 ```http
 GET /api/test
 Authorization: Bearer {jwt-token}
 ```
 
-**Response (200 OK):**
+<details>
+<summary>📤 Response (200 OK)</summary>
+
 ```json
 {
   "success": true,
@@ -149,46 +282,64 @@ Authorization: Bearer {jwt-token}
   }
 }
 ```
+</details>
 
-**Response (401 Unauthorized) - No/Invalid Token:**
-```json
-{
-  "success": false,
-  "message": "Authentication required. Please provide a valid JWT token.",
-  "data": null
-}
+---
+
+## ✅ Validation Rules
+
+| Field | Validation |
+|-------|------------|
+| `email` | Required, valid email format |
+| `password` | Required, minimum 6 characters |
+
+---
+
+## 🔒 Security Implementation
+
+| Feature | Implementation |
+|---------|----------------|
+| **Password Hashing** | BCrypt with default strength |
+| **JWT Tokens** | HS256 signature, 30-min expiry |
+| **Session Management** | Stateless (no server-side sessions) |
+| **CSRF Protection** | Disabled (appropriate for REST APIs) |
+| **Endpoint Protection** | All endpoints except `/api/auth/**` require JWT |
+
+---
+
+## 📧 Email Templates
+
+The application sends **professionally styled HTML emails** with:
+- Gradient header design
+- Call-to-action button
+- Fallback plain text link
+- Responsive layout
+
+---
+
+## 🐛 Troubleshooting
+
+### Email Not Sending
+
+1. **Check console logs** for error messages
+2. **Gmail users**: You must use an [App Password](https://myaccount.google.com/apppasswords), not your regular password
+3. **Development fallback**: If email fails, the verification link is logged to console:
+   ```
+   DEVELOPMENT MODE - Verification link: http://localhost:8080/api/auth/verify?token=...
+   ```
+
+### Database Connection Issues
+
+Ensure PostgreSQL is running and the database exists:
+```bash
+psql -U postgres -c "SELECT 1 FROM pg_database WHERE datname = 'custom_auth_db'"
 ```
 
-### H2 Console
+---
 
-Access the database console at:
-```
-http://localhost:8080/h2-console
-```
+## 📄 API Response Format
 
-**Connection details:**
-- JDBC URL: `jdbc:h2:file:./data/testdb`
-- Username: `sa`
-- Password: `password`
-
-## Validation Rules
-
-| Field    | Rules                                |
-|----------|--------------------------------------|
-| Email    | Required, must be valid email format |
-| Password | Required, minimum 6 characters       |
-
-## Security Features
-
-1. **JWT Authentication**: Tokens expire after 30 minutes
-2. **Password Encryption**: BCrypt hashing
-3. **Stateless Sessions**: No server-side session storage
-4. **CSRF Disabled**: Appropriate for REST APIs
-5. **Protected Endpoints**: All endpoints except `/api/auth/**` require authentication
-
-## Error Responses
-
-All API responses follow this format:
+All responses follow a consistent structure:
 
 ```json
 {
@@ -198,65 +349,24 @@ All API responses follow this format:
 }
 ```
 
-## Development Notes
+---
 
-- When email sending fails (e.g., invalid SMTP credentials), the verification link is logged to the console for testing purposes
-- The H2 console is accessible without authentication for development convenience
-- JWT secret and expiration are configurable in `application.yaml`
+## 🤝 Contributing
 
-## Project Structure
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-```
-src/main/java/com/example/custom_authentication/
-├── config/
-│   ├── JwtAuthenticationEntryPoint.java
-│   └── SecurityConfig.java
-├── controller/
-│   ├── AuthController.java
-│   └── TestController.java
-├── dto/
-│   ├── ApiResponse.java
-│   ├── AuthResponse.java
-│   ├── LoginRequest.java
-│   └── RegisterRequest.java
-├── entity/
-│   └── User.java
-├── exception/
-│   ├── EmailCooldownException.java
-│   ├── GlobalExceptionHandler.java
-│   └── UserNotVerifiedException.java
-├── filter/
-│   └── JwtAuthenticationFilter.java
-├── repository/
-│   └── UserRepository.java
-├── service/
-│   ├── CustomUserDetailsService.java
-│   ├── EmailService.java
-│   └── UserService.java
-├── util/
-│   └── JwtUtil.java
-└── CustomAuthenticationProjectApplication.java
-```
+---
 
-## 📧 Email Troubleshooting
+## 📝 License
 
-If you are not receiving emails, check the application logs in the console.
+This project is licensed under the MIT License.
 
-1.  **"Authentication Failed" Error**:
-    -   This means your `username` or `password` in `application.yaml` is incorrect.
-    -   **Gmail Users**: You CANNOT use your regular password. You MUST use an **App Password**.
-        1.  Go to [Google Account Security](https://myaccount.google.com/security).
-        2.  Enable **2-Step Verification**.
-        3.  Search for **App Passwords**.
-        4.  Create one for "Mail" and "Other (Custom name)".
-        5.  Use that 16-character code as your password in `application.yaml`.
+---
 
-2.  **Development Mode Fallback**:
-    -   If email sending fails, the application **automatically logs the verification link** to the console.
-    -   Look for a log line starting with: `DEVELOPMENT MODE - Verification link: ...`
-    -   Copy and open that link in your browser to verify your account manually.
-
-## 🔄 Resend Verification
-
-You can resend the verification email by making a POST request:
-`POST /api/auth/resend-verification?email=user@example.com`
+<p align="center">
+  Made with ❤️ using Spring Boot
+</p>
