@@ -1,24 +1,32 @@
 # Development Profile - Safe to commit (demo credentials)
 spring:
   datasource:
-    url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE
-    driverClassName: org.h2.Driver
-    username: sa
-    password: password
+    # PostgreSQL Configuration (recommended - satisfies "no in-memory-db" requirement)
+    url: jdbc:postgresql://localhost:5432/custom_auth_db
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    
+    # Alternative: H2 File-based (persistent, not in-memory)
+    # url: jdbc:h2:file:./data/testdb;AUTO_SERVER=TRUE
+    # driverClassName: org.h2.Driver
+    # username: sa
+    # password: password
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # database-platform: org.hibernate.dialect.H2Dialect  # Use this for H2
 
   h2:
     console:
-      enabled: true
+      enabled: false  # Disable H2 console when using PostgreSQL
       path: /h2-console
 
   mail:
     host: sandbox.smtp.mailtrap.io
     port: 2525
-    username: your-mailtrap-username
-    password: your-mailtrap-password
+    username: 213f166ff38d86
+    password: 5f586c83c9f133
     from: noreply@customauth.demo
     properties:
       mail:
