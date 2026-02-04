@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Production Config (contains sensitive credentials) ###
+src/main/resources/application-prod.yaml
+
+### H2 Database Files ###
+/data/

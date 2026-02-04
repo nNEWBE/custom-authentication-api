@@ -1,3 +1,21 @@
 spring:
   application:
     name: Custom-Authentication-Project
+  profiles:
+    active: dev  # Change to 'prod' for production
+
+  # Common JPA settings
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8080
+
+app:
+  base-url: http://localhost:8080
+
+jwt:
+  secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+  expiration: 1800000
